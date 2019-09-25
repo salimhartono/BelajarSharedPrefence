@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Belajar SharedPrefence</string>
+    <string name="login">LOGIN</string>
+    <string name="username">user name</string>
+    <string name="paword">password</string>
+    <string name="forgotPaword">forgot password?</string>
+    <string name="dontHaveAcount">Don\'t have account?</string>
+    <string name="register">Register</string>
+    <string name="title_activity_register_activty">Register</string>
+    <string name="verifyPass">verify password</string>
+    <string name="pria">Laki-laki</string>
+    <string name="wanita">perempuan</string>
+    <string name="email">email</string>
+    <string name="aggre">Dengan ini saya menyetujui kebijakan dan privasi</string>
+    <string name="succesRegister">Berhasil Mendaftar</string>
+    <string name="cautionSucces">Yeeyyy, Kamu sekarang sudah memiliki akun, silhkan login!</string>
+    <string name="acountNotRegist">Account Tidak Terdaftar!</string>
+    <string name="pleaseRegist">Silahkan register terlebih dahulu!</string>
+    <string name="logout">Logout</string>
+    <string name="setting">Setting</string>
+    <string name="nama">nama user</string>
+    <string name="password">password</string>
+    <string name="namaUser">nama</string>
+    <string name="confirmPasword">Confirm Password</string>
+    <string name="saveChange">Simpan perubahan</string>
+</resources>
