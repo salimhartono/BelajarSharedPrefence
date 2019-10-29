@@ -48,6 +48,7 @@ public class LoginActivty extends AppCompatActivity implements View.OnClickListe
             case R.id.btLogin:
                 String userName = etUserName.getText().toString();
                 String password = etPasword.getText().toString();
+
                 if (TextUtils.isEmpty(userName)){
                     etUserName.setError("user name tidak boleh kosong");
                     return;

@@ -23,4 +23,13 @@
     <string name="namaUser">nama</string>
     <string name="confirmPasword">Confirm Password</string>
     <string name="saveChange">Simpan perubahan</string>
+    <string name="Fajr">Fajr</string>
+    <string name="Sunrise">Sunrise</string>
+    <string name="Dhuhr">Dhuhr</string>
+    <string name="descriptionImage">Image Description</string>
+    <string name="asar">Asr</string>
+    <string name="magrib">Maghrib</string>
+    <string name="isyaa">Isha</string>
+    <string name="prayScedule">Praying Time</string>
+    <string name="cityName">city name</string>
 </resources>

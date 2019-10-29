@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class UserModel implements Parcelable {
+
     private String nama;
     private String email;
     private String pasword;
