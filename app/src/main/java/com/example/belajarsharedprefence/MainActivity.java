@@ -1,114 +1,219 @@
 package com.example.belajarsharedprefence;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.belajarsharedprefence.model.Location;
 import com.example.belajarsharedprefence.servie.ApiClient;
 import com.example.belajarsharedprefence.servie.BaseApiService;
+import com.github.ybq.android.spinkit.sprite.Sprite;
+import com.github.ybq.android.spinkit.style.ThreeBounce;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity {
 
     UserModel userModel;
     SaveShared saveShared;
+    TextView tvFajr, tvSyuruk, tvDhur, tvAsr, tvMagrib, tvIsya, tvTanggal, tvLocation,
+            tvTime;
+    TextView txtfajr, txtsunrise, txtduhr, txtAsr, txtMagrib, txtIsya;
+    ImageView ivBackgound;
     BaseApiService apiService;
-    TextView tvFajr, tvSyuruk, tvDuhr, tvAsar, tvMagrib, tvIsya, tvTanggal, tvLocation;
-    Context mContex;
+    ProgressBar progressBar;
+
+    SimpleDateFormat inputParser;
+    Date dateFajar, dateSunrise, dateDuhur, dateAsar, dateMagrib, dateIsya;
+    String fajr, syuruk, duhur, asar, magrib, isya;
+
+    ScrollView svMain;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mContex = this;
 
-        saveShared = new SaveShared(this);
+        //membuat local time berdasarkan lokasi/country
+        Locale indonesia = new Locale("in", "ID");
+        inputParser = new SimpleDateFormat("HH:mm");
+
         tvFajr = findViewById(R.id.tvFajr);
         tvTanggal = findViewById(R.id.tvCalendar);
         tvLocation = findViewById(R.id.tvLocation);
         tvSyuruk = findViewById(R.id.tvSunrise);
-        tvDuhr = findViewById(R.id.tvDhuhr);
-        tvAsar = findViewById(R.id.tvAsr);
+        tvDhur = findViewById(R.id.tvDhuhr);
+        tvAsr = findViewById(R.id.tvAsr);
         tvMagrib = findViewById(R.id.tvMaghrib);
         tvIsya = findViewById(R.id.tvIsha);
-        Button btOk = findViewById(R.id.btOk);
-        btOk.setOnClickListener(this);
+        tvTime = findViewById(R.id.tvTime);
+        ivBackgound = findViewById(R.id.ivBg);
+        svMain = findViewById(R.id.svMain);
+
+
+        //deklarasi untuk view texnya
+        txtfajr = findViewById(R.id.fajr);
+        txtsunrise = findViewById(R.id.sunrise);
+        txtduhr = findViewById(R.id.dhuhr);
+        txtAsr = findViewById(R.id.asr);
+        txtMagrib = findViewById(R.id.maghrib);
+        txtIsya = findViewById(R.id.isha);
+
+        progressBar = findViewById(R.id.spin_kit);
+        Sprite thre = new ThreeBounce();
+        progressBar.setIndeterminateDrawable(thre);
 
         apiService = ApiClient.getJadwal();
-        getMethodJadwal("jonggol");
-        getCurrentDate();
+        getJadwalSholatMethiod("Bekasi");
+        ImageView btChange = findViewById(R.id.btOk);
+        btChange.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final EditText etCityName = new EditText(MainActivity.this);
+                AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+                alert.setTitle("City Name").setMessage("masukan nama kota yang di inginkan").setView(etCityName);
+                alert.setPositiveButton("Change City", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        final String city = etCityName.getText().toString();
+                        getJadwalSholatMethiod(city);
+                    }
+                });
+                alert.show();
+            }
+        });
 
+        showDynamisTime();
     }
 
-    private void getMethodJadwal(String cityName){
-        Call<ResponseBody> callResponse = apiService.getJadwalShalat(cityName);
-        callResponse.enqueue(new Callback<ResponseBody>() {
+    private void showDynamisTime() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE, dd MMM yyy");
+        tvTanggal.setText(simpleDateFormat.format(new Date()));
+
+        //setting dynamisnya, mengikuti waktu
+        Calendar calendar = Calendar.getInstance();
+        int time = calendar.get(Calendar.HOUR_OF_DAY);
+        if (time >= 4 && time <= 5) {
+            tvTime.setText(getString(R.string.Fajr));
+            ivBackgound.setImageResource(R.drawable.pagi_bg);
+            txtfajr.setTextColor(getResources().getColor(R.color.hijouTua));
+            tvFajr.setTextColor(getResources().getColor(R.color.hijouTua));
+        } else if (time >= 5 && time <= 6) {
+            tvTime.setText(getString(R.string.Sunrise));
+            txtsunrise.setTextColor(getResources().getColor(R.color.hijouTua));
+            tvSyuruk.setTextColor(getResources().getColor(R.color.hijouTua));
+        } else if (time >= 19 && time <= 24) {
+            tvTime.setText(getString(R.string.isyaa));
+            ivBackgound.setImageResource(R.drawable.malam_bg);
+            tvIsya.setTextColor(getResources().getColor(R.color.hijouTua));
+            txtIsya.setTextColor(getResources().getColor(R.color.hijouTua));
+        }
+    }
+
+    private void getJadwalSholatMethiod(String namaKota) {
+        Call<ResponseBody> requestApi = apiService.getJadwalShalat(namaKota);
+        requestApi.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()){
+                if (response.isSuccessful()) {
                     try {
-                        JSONObject jsonRESULTS = new JSONObject(response.body().string());
-                        if (jsonRESULTS.getString("status").equals("OK")){
-                            String pagi =jsonRESULTS.getJSONObject("data").getString("Fajr");
-                            String syuruk =jsonRESULTS.getJSONObject("data").getString("Sunrise");
-                            String duhur =jsonRESULTS.getJSONObject("data").getString("Dhuhr");
-                            String asar =jsonRESULTS.getJSONObject("data").getString("Asr");
-                            String magrib =jsonRESULTS.getJSONObject("data").getString("Maghrib");
-                            String isya =jsonRESULTS.getJSONObject("data").getString("Isha");
-                            String location =jsonRESULTS.getJSONObject("location").getString("address");
-                            //Toast.makeText(MainActivity.this, pagi, Toast.LENGTH_SHORT).show();
-                            tvFajr.setText(pagi+" AM");
-                            tvSyuruk.setText(syuruk+" AM");
-                            tvDuhr.setText(duhur+" AM");
-                            tvAsar.setText(asar+" PM");
-                            tvMagrib.setText(magrib+" PM");
-                            tvIsya.setText(isya+" PM");
-                            tvLocation.setText(location);
+                        JSONObject jsonObject = new JSONObject(response.body().string());
+                        if (jsonObject.getString("status").equals("OK")) {
+                            progressBar.setVisibility(View.GONE);
+                            svMain.setVisibility(View.VISIBLE);
+                            fajr = jsonObject.getJSONObject("data").getString("Fajr");
+                            syuruk = jsonObject.getJSONObject("data").getString("Sunrise");
+                            duhur = jsonObject.getJSONObject("data").getString("Dhuhr");
+                            asar = jsonObject.getJSONObject("data").getString("Asr");
+                            magrib = jsonObject.getJSONObject("data").getString("Maghrib");
+                            isya = jsonObject.getJSONObject("data").getString("Isha");
+                            String addres = jsonObject.getJSONObject("location").getString("address");
+
+                            //set data to textview
+                            tvFajr.setText(fajr + " AM");
+                            tvSyuruk.setText(syuruk + " AM");
+                            tvDhur.setText(duhur + " AM");
+                            tvAsr.setText(asar + " PM");
+                            tvMagrib.setText(magrib + " PM");
+                            tvIsya.setText(isya + " PM");
+                            tvLocation.setText(addres);
+                            compareTime();
+
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }
-                else {
-                    Toast.makeText(MainActivity.this, "gagal mendapat response", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "response gagal", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "failur", Toast.LENGTH_SHORT).show();
+                t.printStackTrace();
+                Toast.makeText(MainActivity.this, "Bad Connection", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void getCurrentDate(){
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE, dd MMMM yyy");
-        tvTanggal.setText(simpleDateFormat.format(new Date()));
+    private void compareTime() {
+        Calendar calendarNow = Calendar.getInstance();
+        int hour = calendarNow.get(Calendar.HOUR);
+        int minute = calendarNow.get(Calendar.MINUTE);
 
+
+        SimpleDateFormat postFormater = new SimpleDateFormat("HH:mm");
+        String newDateStr = postFormater.format(new Date());
+        Date date = parseDate(hour + ":" + minute);
+        dateFajar = parseDate(fajr);
+        dateSunrise = parseDate(syuruk);
+        dateDuhur = parseDate(duhur);
+        dateAsar = parseDate(asar);
+        if (dateAsar.before(date) && dateMagrib.after(date)) {
+            tvTime.setText("menungu waktu mahrib");
+            tvDhur.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+            txtduhr.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+            txtduhr.setTypeface(null, Typeface.BOLD);
+            tvDhur.setTypeface(null, Typeface.BOLD);
+        } else {
+            String currentDateTimeString = String.valueOf(dateAsar);
+            tvTime.setText(newDateStr);
+        }
+    }
+
+    private Date parseDate(String date) {
+        try {
+            return inputParser.parse(date);
+        } catch (java.text.ParseException e) {
+            return new Date(0);
+        }
     }
 
     @Override
@@ -134,22 +239,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.btOk:
-                final EditText etCity = new EditText(mContex);
-                AlertDialog.Builder aler = new AlertDialog.Builder(this);
-                aler.setTitle("Cit Name").setMessage("masukan nama kota tanpa spasi").setView(etCity);
-                aler.setPositiveButton("Change City", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        final String city = etCity.getText().toString();
-                        getMethodJadwal(city);
-                    }
-                });
-                aler.show();
-        }
-
-    }
 }
